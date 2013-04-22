@@ -308,6 +308,16 @@ namespace TinyMessenger.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(NotImplementedException))]
+        public void Publish_SubscriptionThrowingException_DoesThrow()
+        {
+            var messenger = UtilityMethods.GetMessengerWithSubscriptionErrorHandler();
+            messenger.Subscribe<GenericTinyMessage<string>>((m) => { throw new NotImplementedException(); });
+
+            messenger.Publish(new GenericTinyMessage<string>(this, "Testing"));
+        }
+
+        [TestMethod]
         public void PublishAsync_NoCallback_DoesNotThrow()
         {
             var messenger = UtilityMethods.GetMessenger();
@@ -427,5 +437,7 @@ namespace TinyMessenger.Tests
 
             Assert.IsTrue(cancelled);
         }
+
+       
     }
 }
