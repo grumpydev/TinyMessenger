@@ -27,6 +27,11 @@ namespace TinyMessenger.Tests.TestData
             return new TinyMessengerHub();
         }
 
+        public static ITinyMessengerHub GetMessengerWithSubscriptionErrorHandler()
+        {
+            return new TinyMessengerHub(new TestSubscriptionErrorHandler());
+        }
+
         public static void FakeDeliveryAction<T>(T message)
             where T:ITinyMessage
         {
