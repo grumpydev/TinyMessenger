@@ -409,7 +409,10 @@ namespace TinyMessenger
 
             public bool ShouldAttemptDelivery(ITinyMessage message)
             {
-                if (!(message is TMessage))
+                if (message == null)
+                    return false;
+
+                if (!(typeof(TMessage).IsAssignableFrom(message.GetType())))
                     return false;
 
                 if (!_DeliveryAction.IsAlive)
@@ -469,7 +472,10 @@ namespace TinyMessenger
 
             public bool ShouldAttemptDelivery(ITinyMessage message)
             {
-                if (!(message is TMessage))
+                if (message == null)
+                    return false;
+
+                if (!(typeof(TMessage).IsAssignableFrom(message.GetType())))
                     return false;
 
                 return _MessageFilter.Invoke(message as TMessage);
@@ -521,7 +527,7 @@ namespace TinyMessenger
         }
 
         private readonly object _SubscriptionsPadlock = new object();
-        private readonly Dictionary<Type, List<SubscriptionItem>> _Subscriptions = new Dictionary<Type, List<SubscriptionItem>>();
+        private readonly List<SubscriptionItem> _Subscriptions = new List<SubscriptionItem>();
         #endregion
 
         #region Public API
@@ -706,14 +712,6 @@ namespace TinyMessenger
 
             lock (_SubscriptionsPadlock)
             {
-                List<SubscriptionItem> currentSubscriptions;
-
-                if (!_Subscriptions.TryGetValue(typeof(TMessage), out currentSubscriptions))
-                {
-                    currentSubscriptions = new List<SubscriptionItem>();
-                    _Subscriptions[typeof(TMessage)] = currentSubscriptions;
-                }
-
                 var subscriptionToken = new TinyMessageSubscriptionToken(this, typeof(TMessage));
 
                 ITinyMessageSubscription subscription;
@@ -722,7 +720,7 @@ namespace TinyMessenger
                 else
                     subscription = new WeakTinyMessageSubscription<TMessage>(subscriptionToken, deliveryAction, messageFilter);
 
-                currentSubscriptions.Add(new SubscriptionItem(proxy, subscription));
+                _Subscriptions.Add(new SubscriptionItem(proxy, subscription));
 
                 return subscriptionToken;
             }
@@ -736,15 +734,11 @@ namespace TinyMessenger
 
             lock (_SubscriptionsPadlock)
             {
-                List<SubscriptionItem> currentSubscriptions;
-                if (!_Subscriptions.TryGetValue(typeof(TMessage), out currentSubscriptions))
-                    return;
-
-                var currentlySubscribed = (from sub in currentSubscriptions
+                var currentlySubscribed = (from sub in _Subscriptions
                                            where object.ReferenceEquals(sub.Subscription.SubscriptionToken, subscriptionToken)
                                            select sub).ToList();
 
-                currentlySubscribed.ForEach(sub => currentSubscriptions.Remove(sub));
+                currentlySubscribed.ForEach(sub => _Subscriptions.Remove(sub));
             }
         }
 
@@ -757,11 +751,7 @@ namespace TinyMessenger
             List<SubscriptionItem> currentlySubscribed;
             lock (_SubscriptionsPadlock)
             {
-                List<SubscriptionItem> currentSubscriptions;
-                if (!_Subscriptions.TryGetValue(typeof(TMessage), out currentSubscriptions))
-                    return;
-
-                currentlySubscribed = (from sub in currentSubscriptions
+                currentlySubscribed = (from sub in _Subscriptions
                                        where sub.Subscription.ShouldAttemptDelivery(message)
                                        select sub).ToList();
             }
