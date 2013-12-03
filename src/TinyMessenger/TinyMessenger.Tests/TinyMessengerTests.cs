@@ -427,5 +427,29 @@ namespace TinyMessenger.Tests
 
             Assert.IsTrue(cancelled);
         }
+
+        [TestMethod]
+        public void Publish_SubscriptionOnBaseClass_HitsSubscription()
+        {
+            var received = false;
+            var messenger = UtilityMethods.GetMessenger();
+            messenger.Subscribe<TestMessage>(tm => received = true);
+
+            messenger.Publish(new DerivedMessage<string>(this) { Things = "Hello" });
+
+            Assert.IsTrue(received);
+        }
+
+        [TestMethod]
+        public void Publish_SubscriptionOnImplementedInterface_HitsSubscription()
+        {
+            var received = false;
+            var messenger = UtilityMethods.GetMessenger();
+            messenger.Subscribe<ITestMessageInterface>(tm => received = true);
+
+            messenger.Publish(new InterfaceDerivedMessage<string>(this) { Things = "Hello" });
+
+            Assert.IsTrue(received);
+        }
     }
 }

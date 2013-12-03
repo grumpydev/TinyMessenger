@@ -14,6 +14,33 @@ namespace TinyMessenger.Tests.TestData
         }
     }
 
+    public class DerivedMessage<TThings> : TestMessage
+    {
+        public TThings Things { get; set; }
+
+        public DerivedMessage(object sender)
+            : base(sender)
+        {
+        }
+    }
+
+    public interface ITestMessageInterface : ITinyMessage
+    {
+        
+    }
+
+    public class InterfaceDerivedMessage<TThings> : ITestMessageInterface
+    {
+        public object Sender { get; private set; }
+
+        public TThings Things { get; set; }
+
+        public InterfaceDerivedMessage(object sender)
+        {
+            this.Sender = sender;
+        }
+}
+
     public class TestProxy : ITinyMessageProxy
     {
         public ITinyMessage Message {get; private set;}
