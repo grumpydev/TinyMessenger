@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace TinyMessenger
@@ -134,7 +135,7 @@ namespace TinyMessenger
             if (hub == null)
                 throw new ArgumentNullException("hub");
 
-            if (!typeof(ITinyMessage).IsAssignableFrom(messageType))
+            if (!typeof(ITinyMessage).GetTypeInfo().IsAssignableFrom(messageType.GetTypeInfo()))
                 throw new ArgumentOutOfRangeException("messageType");
 
             _Hub = new WeakReference(hub);
@@ -149,7 +150,7 @@ namespace TinyMessenger
 
                 if (hub != null)
                 {
-                    var unsubscribeMethod = typeof(ITinyMessengerHub).GetMethod("Unsubscribe", new Type[] {typeof(TinyMessageSubscriptionToken)});
+                    var unsubscribeMethod = typeof(ITinyMessengerHub).GetTypeInfo().GetDeclaredMethod("Unsubscribe");
                     unsubscribeMethod = unsubscribeMethod.MakeGenericMethod(_MessageType);
                     unsubscribeMethod.Invoke(hub, new object[] {this});
                 }
@@ -409,10 +410,7 @@ namespace TinyMessenger
 
             public bool ShouldAttemptDelivery(ITinyMessage message)
             {
-                if (message == null)
-                    return false;
-
-                if (!(typeof(TMessage).IsAssignableFrom(message.GetType())))
+                if (!(message is TMessage))
                     return false;
 
                 if (!_DeliveryAction.IsAlive)
@@ -472,10 +470,7 @@ namespace TinyMessenger
 
             public bool ShouldAttemptDelivery(ITinyMessage message)
             {
-                if (message == null)
-                    return false;
-
-                if (!(typeof(TMessage).IsAssignableFrom(message.GetType())))
+                if (!(message is TMessage))
                     return false;
 
                 return _MessageFilter.Invoke(message as TMessage);
@@ -738,7 +733,10 @@ namespace TinyMessenger
                                            where object.ReferenceEquals(sub.Subscription.SubscriptionToken, subscriptionToken)
                                            select sub).ToList();
 
-                currentlySubscribed.ForEach(sub => _Subscriptions.Remove(sub));
+                foreach (SubscriptionItem subscriptionItem in currentlySubscribed)
+                {
+                    currentlySubscribed.Remove(subscriptionItem);
+                }
             }
         }
 
@@ -756,7 +754,7 @@ namespace TinyMessenger
                                        select sub).ToList();
             }
 
-            currentlySubscribed.ForEach(sub =>
+            foreach (SubscriptionItem sub in currentlySubscribed)
             {
                 try
                 {
@@ -767,7 +765,7 @@ namespace TinyMessenger
                     // Ignore any errors and carry on
                     // TODO - add to a list of erroring subs and remove them?
                 }
-            });
+            }
         }
 
         private void PublishAsyncInternal<TMessage>(TMessage message, AsyncCallback callback) where TMessage : class, ITinyMessage
