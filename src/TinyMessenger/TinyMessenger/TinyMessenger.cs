@@ -733,7 +733,7 @@ namespace TinyMessenger
                                            where object.ReferenceEquals(sub.Subscription.SubscriptionToken, subscriptionToken)
                                            select sub).ToList();
 
-                foreach (SubscriptionItem subscriptionItem in currentlySubscribed)
+                foreach (SubscriptionItem subscriptionItem in currentlySubscribed.ToList())
                 {
                     currentlySubscribed.Remove(subscriptionItem);
                 }
