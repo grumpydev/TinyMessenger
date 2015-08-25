@@ -20,6 +20,21 @@ using System.Text;
 namespace TinyMessenger
 {
     #region Message Types / Interfaces
+
+    public interface ISubscriberErrorHandler
+    {
+        void Handle(ITinyMessage message, Exception exception);
+    }
+
+    public class DefaultSubscriberErrorHandler : ISubscriberErrorHandler
+    {
+        public void Handle(ITinyMessage message, Exception exception)
+        {
+            //default behaviour is to do nothing
+           
+        }
+    }
+
     /// <summary>
     /// A TinyMessage to be published/delivered by TinyMessenger
     /// </summary>
@@ -394,6 +409,21 @@ namespace TinyMessenger
     /// </summary>
     public sealed class TinyMessengerHub : ITinyMessengerHub
     {
+        readonly ISubscriberErrorHandler _SubscriberErrorHandler;
+
+        #region ctor methods
+
+        public TinyMessengerHub()
+        {
+            _SubscriberErrorHandler = new DefaultSubscriberErrorHandler();
+        }
+
+        public TinyMessengerHub(ISubscriberErrorHandler subscriberErrorHandler)
+        {
+            _SubscriberErrorHandler = subscriberErrorHandler;
+        }
+        #endregion
+
         #region Private Types and Interfaces
         private class WeakTinyMessageSubscription<TMessage> : ITinyMessageSubscription
             where TMessage : class, ITinyMessage
@@ -762,10 +792,10 @@ namespace TinyMessenger
                 {
                     sub.Proxy.Deliver(message, sub.Subscription);
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
-                    // Ignore any errors and carry on
-                    // TODO - add to a list of erroring subs and remove them?
+                    // By default ignore any errors and carry on
+                    _SubscriberErrorHandler.Handle(message, exception);
                 }
             });
         }

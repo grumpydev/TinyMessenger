@@ -52,4 +52,13 @@ namespace TinyMessenger.Tests.TestData
         }
     }
 
+    public class TestSubscriptionErrorHandler : ISubscriberErrorHandler
+    {
+        public void Handle(ITinyMessage message, Exception exception)
+        {
+            throw exception;
+        }
+    }
+
+
 }
