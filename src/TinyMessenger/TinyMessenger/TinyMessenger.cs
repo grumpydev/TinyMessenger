@@ -380,6 +380,14 @@ namespace TinyMessenger
         void Unsubscribe<TMessage>(TinyMessageSubscriptionToken subscriptionToken) where TMessage : class, ITinyMessage;
 
         /// <summary>
+        /// Unsubscribe from a particular message type.
+        /// 
+        /// Does not throw an exception if the subscription is not found.
+        /// </summary>
+        /// <param name="subscriptionToken">Subscription token received from Subscribe</param>
+        void Unsubscribe(TinyMessageSubscriptionToken subscriptionToken);
+
+        /// <summary>
         /// Publish a message to any subscribers
         /// </summary>
         /// <typeparam name="TMessage">Type of message</typeparam>
@@ -693,6 +701,17 @@ namespace TinyMessenger
         public void Unsubscribe<TMessage>(TinyMessageSubscriptionToken subscriptionToken) where TMessage : class, ITinyMessage
         {
             RemoveSubscriptionInternal<TMessage>(subscriptionToken);
+        }
+
+        /// <summary>
+        /// Unsubscribe from a particular message type.
+        /// 
+        /// Does not throw an exception if the subscription is not found.
+        /// </summary>
+        /// <param name="subscriptionToken">Subscription token received from Subscribe</param>
+        public void Unsubscribe(TinyMessageSubscriptionToken subscriptionToken)
+        {
+            RemoveSubscriptionInternal<ITinyMessage>(subscriptionToken);
         }
 
         /// <summary>
