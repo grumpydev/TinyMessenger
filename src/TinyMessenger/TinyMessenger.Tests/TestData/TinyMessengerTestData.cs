@@ -32,14 +32,20 @@ namespace TinyMessenger.Tests.TestData
     public class InterfaceDerivedMessage<TThings> : ITestMessageInterface
     {
         public object Sender { get; private set; }
+        public bool Consume { get; private set; }
 
         public TThings Things { get; set; }
 
-        public InterfaceDerivedMessage(object sender)
+        public InterfaceDerivedMessage(object sender) : this(sender, false)
+        {
+        }
+
+        public InterfaceDerivedMessage(object sender, bool consume)
         {
             this.Sender = sender;
+            this.Consume = consume;
         }
-}
+    }
 
     public class TestProxy : ITinyMessageProxy
     {
