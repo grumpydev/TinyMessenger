@@ -15,11 +15,12 @@ namespace TinyMessenger.Tests
         public void Dispose_WithValidHubReference_UnregistersWithHub()
         {
             var messengerMock = new Moq.Mock<ITinyMessengerHub>();
+
             messengerMock.Setup((messenger) => messenger.Unsubscribe<TestMessage>(Moq.It.IsAny<TinyMessageSubscriptionToken>())).Verifiable();
+
             var token = new TinyMessageSubscriptionToken(messengerMock.Object, typeof(TestMessage));
 
             token.Dispose();
-
             messengerMock.VerifyAll();
         }
 
@@ -27,6 +28,7 @@ namespace TinyMessenger.Tests
         public void Dispose_WithInvalidHubReference_DoesNotThrow()
         {
             var token = UtilityMethods.GetTokenWithOutOfScopeMessenger();
+
             GC.Collect();
             GC.WaitForFullGCComplete(2000);
 
@@ -38,7 +40,6 @@ namespace TinyMessenger.Tests
         public void Ctor_NullHub_ThrowsArgumentNullException()
         {
             var messenger = UtilityMethods.GetMessenger();
-
             var token = new TinyMessageSubscriptionToken(null, typeof(ITinyMessage));
         }
 
@@ -47,7 +48,6 @@ namespace TinyMessenger.Tests
         public void Ctor_InvalidMessageType_ThrowsArgumentOutOfRangeException()
         {
             var messenger = UtilityMethods.GetMessenger();
-
             var token = new TinyMessageSubscriptionToken(messenger, typeof(object));
         }
 
@@ -55,7 +55,6 @@ namespace TinyMessenger.Tests
         public void Ctor_ValidHubAndMessageType_DoesNotThrow()
         {
             var messenger = UtilityMethods.GetMessenger();
-
             var token = new TinyMessageSubscriptionToken(messenger, typeof(TestMessage));
         }
     }
